@@ -9,7 +9,7 @@ class Note extends Model {
 
     use SoftDeletes;
     
-    protected $fillable = ['content'];
+    protected $fillable = ['content', 'noteable_id', 'noteable_type'];
 
     public function noteable() {
         return $this->morphTo();

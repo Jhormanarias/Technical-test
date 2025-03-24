@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\ContactController;
+use App\Http\Controllers\NoteController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -25,5 +26,11 @@ Route::middleware('auth:api')->group(function () {
 
     //CRUD Contacts
     Route::apiResource('/contacts', ContactController::class);
+
+    //NOTAS
+    Route::apiResource('notes', NoteController::class);
+    Route::post('/update_in_model', [NoteController::class, 'update_in_model']);
+
+
 });
 

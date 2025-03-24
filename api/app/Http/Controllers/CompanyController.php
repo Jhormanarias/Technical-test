@@ -42,7 +42,7 @@ class CompanyController extends ResourceController
     public function show($id)
     {
         try {
-            $company = $this->model::with('contacts')->find($id);
+            $company = $this->model::with('contacts', 'notes')->find($id);
 
             if (!$company) {
                 return response()->json(['message' => 'Company not found'], 404);

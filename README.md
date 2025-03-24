@@ -1,7 +1,7 @@
 # **Prueba Técnica: API CRUD con Laravel y Docker**
 
 ## **Descripción**
-Este proyecto es una API desarrollada en Laravel para gestionar operaciones CRUD de **Compañías** y **Contactos**, con autenticación mediante **JWT (JSON Web Tokens)**. Incluye una estructura robusta utilizando contenedores con **Docker** para una configuración y despliegue eficientes.
+Este proyecto es una API robusta desarrollada en Laravel para gestionar **Compañías**, **Contactos**, y **Notas Polimórficas**, diseñada para cumplir con requisitos de escalabilidad, organización y buenas prácticas. Utiliza **JWT (JSON Web Tokens)** para autenticación y está completamente dockerizado para facilitar su instalación y despliegue. Además, las relaciones polimórficas permiten una mayor flexibilidad al asociar notas con diferentes tipos de modelos.
 
 ---
 
@@ -10,6 +10,28 @@ Este proyecto es una API desarrollada en Laravel para gestionar operaciones CRUD
 - **Git** (Para clonar el repositorio).
 - **PostgreSQL** (Configurado como servicio en Docker).
 - **Composer** (Administrado automáticamente dentro del contenedor).
+
+---
+
+## **Características Principales**
+1. **Autenticación JWT:**
+   - Registro, inicio de sesión y cierre de sesión.
+   - Protege todos los endpoints con tokens válidos.
+
+2. **CRUD de Compañías:**
+   - Operaciones para crear, leer, actualizar y eliminar compañías.
+   - Relación **hasMany** con contactos.
+
+3. **CRUD de Contactos:**
+   - Operaciones para crear, leer, actualizar y eliminar contactos.
+   - Relación **belongsTo** con compañías.
+
+4. **Notas Polimórficas:**
+   - Las notas pueden asociarse tanto a compañías como a contactos (y otros modelos en el futuro).
+   - Operaciones CRUD completas.
+
+5. **Dockerizado:**
+   - Implementación portátil y eficiente mediante Docker Compose.
 
 ---
 
@@ -72,82 +94,88 @@ Con los contenedores en funcionamiento, puedes acceder a la API a través de `ht
 ---
 
 ## **Uso de la API**
+## **Endpoints Principales**
 
 ### **Autenticación**
-Los endpoints de autenticación permiten:
-1. **Registro** de usuarios:
-   ```http
-   POST /api/register
-   ```
-2. **Inicio de sesión**:
-   ```http
-   POST /api/login
-   ```
-3. **Cierre de sesión** (requiere token válido):
-   ```http
-   POST /api/logout
-   ```
+- **Registro:** `POST /api/register`
+- **Inicio de Sesión:** `POST /api/login`
+- **Cierre de Sesión:** `POST /api/logout`
 
 ### **CRUD de Compañías**
-1. Obtener todas las compañías:
-   ```http
-   GET /api/companies
-   ```
-2. Crear una nueva compañía:
-   ```http
-   POST /api/companies
-   ```
-3. Obtener una compañía específica (con contactos):
-   ```http
-   GET /api/companies/{id}
-   ```
-4. Actualizar una compañía:
-   ```http
-   PUT /api/companies/{id}
-   ```
-5. Eliminar una compañía:
-   ```http
-   DELETE /api/companies/{id}
-   ```
+1. **Listar compañías:** `GET /api/companies` (incluye contactos y notas).
+2. **Crear una compañía:** `POST /api/companies`
+3. **Consultar una compañía:** `GET /api/companies/{id}` (incluye relaciones).
+4. **Actualizar una compañía:** `PUT /api/companies/{id}`
+5. **Eliminar una compañía:** `DELETE /api/companies/{id}`
 
 ### **CRUD de Contactos**
-1. Obtener todos los contactos:
-   ```http
-   GET /api/contacts
+1. **Listar contactos:** `GET /api/contacts` (incluye relaciones).
+2. **Crear un contacto:** `POST /api/contacts`
+3. **Consultar un contacto:** `GET /api/contacts/{id}`
+4. **Actualizar un contacto:** `PUT /api/contacts/{id}`
+5. **Eliminar un contacto:** `DELETE /api/contacts/{id}`
+
+### **Notas Polimórficas**
+1. **Crear una nota:** `POST /api/notes`
+   ```json
+   {
+     "content": "Esta es una nota para la compañía.",
+     "noteable_id": 1,
+     "noteable_type": "App\\Models\\Company"
+   }
    ```
-2. Crear un nuevo contacto:
-   ```http
-   POST /api/contacts
+2. **Listar todas las notas:** `GET /api/notes`
+3. **Consultar una nota específica:** `GET /api/notes/{id}`
+4. **Actualizar una nota:** `PUT /api/notes/{id}`
+   ```json
+   {
+     "content": "Nota actualizada"
+   }
    ```
-3. Obtener un contacto específico:
-   ```http
-   GET /api/contacts/{id}
-   ```
-4. Actualizar un contacto:
-   ```http
-   PUT /api/contacts/{id}
-   ```
-5. Eliminar un contacto:
-   ```http
-   DELETE /api/contacts/{id}
-   ```
+5. **Eliminar una nota:** `DELETE /api/notes/{id}`
 
 ---
 
 ## **Estructura del Proyecto**
-El proyecto sigue una arquitectura limpia con la lógica separada en controladores, modelos y servicios:
 
-- **Controladores**: Manejan las solicitudes HTTP.
-- **Modelos**: Representan las tablas de la base de datos y sus relaciones.
+### **Controladores**
+- **AuthController:** Gestiona la autenticación con JWT (registro, inicio y cierre de sesión).
+- **CompanyController:** CRUD completo para compañías, con relaciones `contacts` y `notes`.
+- **ContactController:** CRUD completo para contactos, con relaciones `company` y `notes`.
+- **NoteController:** CRUD para notas polimórficas.
+
+### **Modelos**
+- **Company:**
+  - Relación `hasMany` con `Contact`.
+  - Relación `morphMany` con `Note`.
+- **Contact:**
+  - Relación `belongsTo` con `Company`.
+  - Relación `morphMany` con `Note`.
+- **Note:**
+  - Relación polimórfica `morphTo` para asociarse a múltiples modelos.
 - **Servicios**: Manejan la lógica de negocio (No está implementada).
 
 ---
 
-## **Notas Importantes**
-- El contenedor de la base de datos persiste los datos en la carpeta `data/pg_data`.
-- La relación polimórfica para **Notas** está pendiente de implementación, pero se planificó en detalle para optimizar la escalabilidad y el uso de Eloquent.
+### **Pruebas con Postman**
+1. **Autenticación:**
+   - Asegúrate de incluir el token JWT en las cabeceras:
+     ```http
+     Authorization: Bearer {jwt_token}
+     ```
+2. **CRUD de compañías y contactos:**
+   - Prueba los endpoints para crear, leer, actualizar y eliminar compañías y contactos.
+3. **Relaciones polimórficas:**
+   - Crea notas para compañías y contactos y consulta sus relaciones.
 
 ---
+
+## **Notas Técnicas**
+- **Dockerización Completa:** El proyecto utiliza Docker para ejecutar la aplicación y la base de datos, lo que facilita la configuración en cualquier entorno.
+- **Relaciones Polimórficas:** La tabla `notes` utiliza una relación polimórfica para asociarse con múltiples modelos, lo que la hace extensible y escalable.
+- **Seguridad:** Todos los endpoints están protegidos mediante autenticación JWT.
+- El contenedor de la base de datos persiste los datos en la carpeta `data/pg_data`.
+
 
 ## **Desarrollador**
 Desarrollado por Jhorman Gañan Arias.

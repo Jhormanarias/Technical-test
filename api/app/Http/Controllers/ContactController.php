@@ -12,13 +12,16 @@ class ContactController extends ResourceController
     public function index()
     {
         try {
-            return parent::index();
+            $contacts = $this->model::with('company', 'notes')->get();
+    
+            return response()->json($contacts, 200);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Error al obtener los contactos',
                 'error' => $e->getMessage(),
             ], 500);
         }
+    
     }
 
     public function store(Request $request)
@@ -35,6 +38,24 @@ class ContactController extends ResourceController
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Error al almacenar el contacto',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function show($id)
+    {
+        try {
+            $contact = $this->model::with('company', 'notes')->find($id);
+
+            if (!$contact) {
+                return response()->json(['message' => 'Contact not found'], 404);
+            }
+
+            return response()->json($contact);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al mostrar el contacto',
                 'error' => $e->getMessage(),
             ], 500);
         }
