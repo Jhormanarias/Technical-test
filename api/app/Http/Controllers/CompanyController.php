@@ -10,52 +10,84 @@ class CompanyController extends ResourceController
 {
     protected $model = Company::class;
 
-    public function __construct(CompanyService $companyService)
-    {
-        $this->service = $companyService;
-    }
-
     public function index()
     {
-        $companies = $this->service->all();
-        return response()->json($companies);
+        try {
+            $companies = $this->model::with('contacts')->get();
+            return response()->json($companies, 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Ocurrió un error al obtener las compañías',
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 
     public function store(Request $request)
     {
-        $data = $request->validate([
-            'name' => 'required|string|max:255'
-        ]);
+        try {
+            $data = $request->validate([
+                'name' => 'required|string|max:255'
+            ]);
 
-        return parent::store(new Request($data));
+            return parent::store(new Request($data));
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al almacenar la compañía',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     public function show($id)
     {
-        $company = $this->service->find($id);
-        if (!$company) {
-            return response()->json(['message' => 'Company not found'], 404);
-        }
+        try {
+            $company = $this->model::with('contacts')->find($id);
 
-        return response()->json($company);
+            if (!$company) {
+                return response()->json(['message' => 'Company not found'], 404);
+            }
+
+            return response()->json($company);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al mostrar la compañía',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     public function update(Request $request, $id)
     {
-        $data = $request->validate([
-            'name' => 'sometimes|required|string|max:255'
-        ]);
+        try {
+            $data = $request->validate([
+                'name' => 'sometimes|required|string|max:255'
+            ]);
 
-        return parent::update(new Request($data), $id);
+            return parent::update(new Request($data), $id);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al actualizar la compañía',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     public function destroy($id)
     {
-        $deleted = $this->service->delete($id);
-        if (!$deleted) {
-            return response()->json(['message' => 'Company not found or could not be deleted'], 404);
-        }
+        try {
+            $deleted = parent::delete($id);
 
-        return response()->json(['message' => 'Company deleted successfully']);
+            if (!$deleted) {
+                return response()->json(['message' => 'Company not found or could not be deleted'], 404);
+            }
+
+            return response()->json(['message' => 'Company deleted successfully']);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al eliminar la compañía',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 }

@@ -9,37 +9,46 @@ class ResourceController extends Controller
 {
     use ValidatesRequests;
 
-    /**
-     * Servicio que gestiona la lógica de negocio.
-     * Debe definirse en el controlador hijo.
-     */
-    protected $service;
+    protected $model;
 
     /**
      * Mostrar todos los recursos.
      */
     public function index()
     {
-        return response()->json($this->service->getAll());
+        try {
+            $data = $this->model::all();
+            return response()->json($data);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener los datos',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
+
 
     /**
      * Almacenar un nuevo recurso.
      */
     public function store(Request $request)
     {
-        try {
-            $model = $this->service->create($request->all());
+        try{
+            $model = new $this->model($request->all());
+            $this->validate($request, [
+                'id' => 'numeric'
+            ]);
+            $model->save();
 
-            return response()->json([
-                'message' => 'Creado',
-                'data' => $model
-            ], 201);
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Error al guardar el recurso',
-                'error' => $e->getMessage(),
-            ], 422);
+        return $model;
+        }
+        catch(\Exception $e){
+            return response()->json(
+                [
+                    'message' => $e,
+                ],
+                422
+            );
         }
     }
 
@@ -48,7 +57,22 @@ class ResourceController extends Controller
      */
     public function show($id)
     {
-        return response()->json($this->service->find($id));
+        try {
+            $data = $this->model->find($id);
+
+            if (!$data) {
+                return response()->json([
+                    'message' => 'Recurso no encontrado',
+                ], 404);
+            }
+
+            return response()->json($data);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al mostrar el recurso',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     /**
@@ -57,35 +81,54 @@ class ResourceController extends Controller
     public function update(Request $request, $id)
     {
         try {
-            $model = $this->service->update($id, $request->all());
 
+            $model = $this->model::find($id);
+            $model->update($request->all());
+            //return successful response
             return response()->json([
-                'message' => 'Actualizado',
-                'data' => $model
-            ]);
+                        'message' => 'Actualizado',
+                        'data' => $model
+                    ]);
         } catch (\Exception $e) {
+            //return error message
             return response()->json([
-                'message' => 'Error al actualizar',
-                'error' => $e->getMessage(),
-            ], 422);
+                        'message' => 'Error al actualizar',
+                        'error' => $e->getMessage(),
+                    ], 422);
         }
+
     }
 
     /**
      * Eliminar un recurso.
      */
-    public function destroy($id)
+    public function delete($id)
     {
-        try {
-            $this->service->delete($id);
-            return response()->json([
-                'message' => 'Eliminado'
-            ], 200);
-        } catch (\Exception $e) {
+        try{
+            $data = $this->model::find($id);
+            $data->delete();
+
+            return response()->json(
+                [
+                    'message' => '$Dato eliminado',
+                    'message' => $data
+                ],
+                200
+            );
+            /* return response('', 204); */
+        }
+        catch (\Exception $e) 
+        {
             return response()->json([
                 'message' => 'Error al eliminar',
                 'error' => $e->getMessage(),
             ], 422);
         }
+        
     }
 }
+
+
+
+
+
