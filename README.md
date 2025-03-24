@@ -3,6 +3,8 @@
 ## **Descripción**
 Este proyecto es una API robusta desarrollada en Laravel para gestionar **Compañías**, **Contactos**, y **Notas Polimórficas**, diseñada para cumplir con requisitos de escalabilidad, organización y buenas prácticas. Utiliza **JWT (JSON Web Tokens)** para autenticación y está completamente dockerizado para facilitar su instalación y despliegue. Además, las relaciones polimórficas permiten una mayor flexibilidad al asociar notas con diferentes tipos de modelos.
 
+Este proyecto ahora incluye **pruebas automáticas**, lo que garantiza la calidad del código y el funcionamiento de los endpoints principales, con especial enfoque en la autenticación y el manejo de errores.
+
 ---
 
 ## **Requerimientos del Sistema**
@@ -10,6 +12,7 @@ Este proyecto es una API robusta desarrollada en Laravel para gestionar **Compa�
 - **Git** (Para clonar el repositorio).
 - **PostgreSQL** (Configurado como servicio en Docker).
 - **Composer** (Administrado automáticamente dentro del contenedor).
+- **PHPUnit** (Para ejecutar pruebas automáticas).
 
 ---
 
@@ -17,6 +20,7 @@ Este proyecto es una API robusta desarrollada en Laravel para gestionar **Compa�
 1. **Autenticación JWT:**
    - Registro, inicio de sesión y cierre de sesión.
    - Protege todos los endpoints con tokens válidos.
+   - **Pruebas:** Validación de registro de usuarios, inicio de sesión y manejo de credenciales inválidas.
 
 2. **CRUD de Compañías:**
    - Operaciones para crear, leer, actualizar y eliminar compañías.
@@ -153,20 +157,32 @@ Con los contenedores en funcionamiento, puedes acceder a la API a través de `ht
   - Relación `morphMany` con `Note`.
 - **Note:**
   - Relación polimórfica `morphTo` para asociarse a múltiples modelos.
-- **Servicios**: Manejan la lógica de negocio (No está implementada).
 
 ---
 
-### **Pruebas con Postman**
+## **Pruebas Automáticas**
+
+### **Pruebas Implementadas**
+Se añadieron pruebas automáticas utilizando PHPUnit para validar:
 1. **Autenticación:**
-   - Asegúrate de incluir el token JWT en las cabeceras:
-     ```http
-     Authorization: Bearer {jwt_token}
-     ```
-2. **CRUD de compañías y contactos:**
-   - Prueba los endpoints para crear, leer, actualizar y eliminar compañías y contactos.
-3. **Relaciones polimórficas:**
-   - Crea notas para compañías y contactos y consulta sus relaciones.
+   - Registro de usuarios: Verifica que se puedan crear usuarios correctamente y que se devuelva el modelo creado.
+   - Inicio de sesión: Verifica credenciales correctas e inválidas.
+   - Manejo de errores: Valida que se arrojen errores apropiados para credenciales incorrectas.
+
+2. **CRUD de Compañías y Contactos:**
+   - Crea, lista, actualiza y elimina compañías y contactos.
+   - Relación con notas incluida.
+
+3. **Relaciones Polimórficas:**
+   - Crea, lista, actualiza y elimina notas asociadas a compañías y contactos.
+
+### **Ejecutar Pruebas**
+Ejecuta las pruebas con el siguiente comando:
+```bash
+php artisan test
+```
+
+El archivo `phpunit.xml` está configurado para usar una base de datos en memoria (`sqlite`) en el entorno de pruebas, garantizando rapidez y aislamiento durante la ejecución de las pruebas.
 
 ---
 
@@ -174,8 +190,9 @@ Con los contenedores en funcionamiento, puedes acceder a la API a través de `ht
 - **Dockerización Completa:** El proyecto utiliza Docker para ejecutar la aplicación y la base de datos, lo que facilita la configuración en cualquier entorno.
 - **Relaciones Polimórficas:** La tabla `notes` utiliza una relación polimórfica para asociarse con múltiples modelos, lo que la hace extensible y escalable.
 - **Seguridad:** Todos los endpoints están protegidos mediante autenticación JWT.
-- El contenedor de la base de datos persiste los datos en la carpeta `data/pg_data`.
+- **Pruebas Automatizadas:** Aseguran la calidad y el correcto funcionamiento de los endpoints principales del proyecto.
 
+---
 
 ## **Desarrollador**
 Desarrollado por Jhorman Gañan Arias.
